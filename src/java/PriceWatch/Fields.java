@@ -15,6 +15,7 @@ public class Fields {
     public final static String PASSWORD = "password";
     public final static String GAS_STATION_ID = "gasStationId";
     public final static String FUEL_TYPE = "fuelType";
+    public final static String TARGET_ADDRESS = "targetAddress";
     public final static String TARGET_LAT = "targetLat";
     public final static String TARGET_LONG = "targetLong";
     public final static String PRICE = "price";
@@ -24,4 +25,6 @@ public class Fields {
     public final static String REG = "reg";
     public final static String MID = "mid";
     public final static String PRE = "pre";
+    public final static String TRIGGERS = "triggers";
+    public final static String RESULT = "result";
 }

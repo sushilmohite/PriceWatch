@@ -14,10 +14,11 @@ public class Trigger implements Serializable {
     private final String userName;
     private int gasStationId;
     private String fuelType;
+    private String targetAddress;
     private double targetLatitude;
     private double targetLongitude;
     private double price;
-    private int distance;
+    private double distance;
     private double myLatitude;
     private double myLongitude;
     
@@ -105,14 +106,14 @@ public class Trigger implements Serializable {
     /**
      * @return the distance
      */
-    public int getDistance() {
+    public double getDistance() {
         return distance;
     }
 
     /**
      * @param distance the distance to set
      */
-    public void setDistance(int distance) {
+    public void setDistance(double distance) {
         this.distance = distance;
     }
 
@@ -142,5 +143,19 @@ public class Trigger implements Serializable {
      */
     public void setMyLongitude(double myLongitude) {
         this.myLongitude = myLongitude;
+    }
+
+    /**
+     * @return the targetAddress
+     */
+    public String getTargetAddress() {
+        return targetAddress;
+    }
+
+    /**
+     * @param targetAddress the targetAddress to set
+     */
+    public void setTargetAddress(String targetAddress) {
+        this.targetAddress = targetAddress;
     }
 }

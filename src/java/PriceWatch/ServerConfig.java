@@ -15,7 +15,7 @@ public class ServerConfig {
     
     public final static double INITIAL_PRICE = -1.0;
     public final static String MONGO_DB = "test";
-    public final static String TRIGGER_COLLECTION = "test";
+    public final static String TRIGGER_COLLECTION = "test1";
     public final static String SAFE_VALUE_COLLECTION = "safe_test";
     public final static String LATEST_PRICE_COLLECTION = "latest_test";
     public final static String USERS_COLLECTION = "users_test";

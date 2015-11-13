@@ -16,6 +16,9 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.Socket;
 import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class PWLogic implements Serializable {
     private final MongoClient mongoClient;
@@ -41,6 +44,7 @@ public class PWLogic implements Serializable {
         Document doc = new Document(Fields.USERNAME, trigger.getUserName())
                         .append(Fields.GAS_STATION_ID, trigger.getGasStationId())
                         .append(Fields.FUEL_TYPE, trigger.getFuelType())
+                        .append(Fields.TARGET_ADDRESS, trigger.getTargetAddress())
                         .append(Fields.TARGET_LAT, trigger.getTargetLatitude())
                         .append(Fields.TARGET_LONG, trigger.getTargetLongitude())
                         .append(Fields.PRICE, trigger.getPrice())
@@ -65,7 +69,7 @@ public class PWLogic implements Serializable {
                         trigger.getDouble(Fields.MY_LONG), 
                         trigger.getDouble(Fields.TARGET_LAT), 
                         trigger.getDouble(Fields.TARGET_LONG));
-                if (distance <= trigger.getInteger(Fields.DISTANCE)) {  
+                if (distance <= trigger.getDouble(Fields.DISTANCE)) {  
                     //Send notification
                     sendNotification();
                 }
@@ -88,7 +92,7 @@ public class PWLogic implements Serializable {
                     trigger.getDouble(Fields.MY_LONG), 
                     trigger.getDouble(Fields.TARGET_LAT), 
                     trigger.getDouble(Fields.TARGET_LONG));
-            if (distance <= trigger.getInteger(Fields.DISTANCE)) {
+            if (distance <= trigger.getDouble(Fields.DISTANCE)) {
                 Document latestPrice = (Document) latestPriceCol.find(new Document(Fields.ID, 
                         trigger.getInteger(Fields.GAS_STATION_ID))).first();                
                 if ((latestPrice.getDouble(trigger.getString(Fields.FUEL_TYPE)) <= trigger.getDouble(Fields.PRICE)) && 
@@ -175,6 +179,36 @@ public class PWLogic implements Serializable {
             //Send data to update price service
             notifyUpdateService(gasStationId);
         }
+    }
+    
+    public boolean deleteTrigger(String triggerId) {
+        ObjectId objId = new ObjectId(triggerId);
+        Document trigger = (Document) triggerCol.find(new Document(Fields.ID, objId)).first();
+        
+        if (trigger != null) {
+            triggerCol.deleteOne(trigger);
+            return true;
+        }
+        return false;
+    }
+    
+    public String getUserTriggerData(String userName) {
+        FindIterable<Document> triggers = triggerCol.find(new Document(Fields.USERNAME, userName));
+        // Create array of triggers
+        JSONArray userTriggers = new JSONArray();
+        for (Document trigger : triggers) {
+            JSONObject obj = new JSONObject();
+            obj.put(Fields.ID, trigger.getObjectId(Fields.ID).toString());
+            obj.put(Fields.TARGET_ADDRESS, trigger.getString(Fields.TARGET_ADDRESS));
+            obj.put(Fields.PRICE, trigger.getDouble(Fields.PRICE));
+            obj.put(Fields.DISTANCE, trigger.getDouble(Fields.DISTANCE));
+            userTriggers.add(obj);
+        }
+        
+        JSONObject finalObj = new JSONObject();
+        finalObj.put(Fields.RESULT, true);
+        finalObj.put(Fields.TRIGGERS, userTriggers);
+        return finalObj.toJSONString();
     }
 
     /*
