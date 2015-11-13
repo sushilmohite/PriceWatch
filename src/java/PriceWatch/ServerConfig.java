@@ -20,4 +20,7 @@ public class ServerConfig {
     public final static String LATEST_PRICE_COLLECTION = "latest_test";
     public final static String USERS_COLLECTION = "users_test";
     public final static String MONGO_UPDATE_KEY = "$set";
+    
+    public final static String TARGET_SEQ = "_";
+    public final static String REPLACEMENT_SEQ = " ";
 }

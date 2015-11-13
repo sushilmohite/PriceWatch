@@ -67,7 +67,7 @@ public class PriceWatchWS {
         }
         
         JSONObject obj = new JSONObject();
-        obj.put("result", result);
+        obj.put(Fields.RESULT, result);
         return obj.toJSONString();
     }
 
@@ -77,6 +77,7 @@ public class PriceWatchWS {
      * @param userName
      * @param password
      * @param gasStationId
+     * @param gasStationName
      * @param fuelType
      * @param targetAddress
      * @param targetLat
@@ -91,13 +92,16 @@ public class PriceWatchWS {
     @GET
     @Path("client")
     @Consumes("text/plain")
-    public String subscribe(@QueryParam("userName") String userName, @QueryParam("password") String password, @QueryParam("gasStationId") int gasStationId, @QueryParam("fuelType") String fuelType, @QueryParam("targetAddress") String targetAddress, @QueryParam("targetLat") double targetLat, @QueryParam("targetLong") double targetLong, @QueryParam("price") double price, @QueryParam("distance") double distance, @QueryParam("myLat") double myLat, @QueryParam("myLong") double myLong) throws IOException {
-        String userId = null;
+    public String subscribe(@QueryParam("userName") String userName, @QueryParam("password") String password, @QueryParam("gasStationId") int gasStationId, @QueryParam("gasStationName") String gasStationName, @QueryParam("fuelType") String fuelType, @QueryParam("targetAddress") String targetAddress, @QueryParam("targetLat") double targetLat, @QueryParam("targetLong") double targetLong, @QueryParam("price") double price, @QueryParam("distance") double distance, @QueryParam("myLat") double myLat, @QueryParam("myLong") double myLong) throws IOException {
+        boolean result = false;
         try {
             if (pwLogic.isUserRegistered(userName, password)) {
                 Trigger trigger = new Trigger(userName);
                 trigger.setGasStationId(gasStationId);
+                gasStationName = gasStationName.replace(ServerConfig.TARGET_SEQ, ServerConfig.REPLACEMENT_SEQ);
+                trigger.setGasStationName(gasStationName);
                 trigger.setFuelType(fuelType);
+                targetAddress = targetAddress.replace(ServerConfig.TARGET_SEQ, ServerConfig.REPLACEMENT_SEQ);
                 trigger.setTargetAddress(targetAddress);
                 trigger.setTargetLatitude(targetLat);
                 trigger.setTargetLongitude(targetLong);
@@ -105,7 +109,7 @@ public class PriceWatchWS {
                 trigger.setDistance(distance);
                 trigger.setMyLatitude(myLat);
                 trigger.setMyLongitude(myLong);
-                userId = pwLogic.addTrigger(trigger);
+                result = pwLogic.addTrigger(trigger);
             
                 pwLogic.evaluateContainersForGasStationId(trigger.getGasStationId());
             }
@@ -115,7 +119,7 @@ public class PriceWatchWS {
         }
         
         JSONObject obj = new JSONObject();
-        obj.put("userId", userId);
+        obj.put(Fields.RESULT, result);
         return obj.toJSONString();
     }
     
@@ -150,7 +154,7 @@ public class PriceWatchWS {
         }
         
         JSONObject obj = new JSONObject();
-        obj.put("result", result);
+        obj.put(Fields.RESULT, result);
         return obj.toJSONString();
     }
     
@@ -167,7 +171,7 @@ public class PriceWatchWS {
         }
         
         JSONObject obj = new JSONObject();
-        obj.put("result", result);
+        obj.put(Fields.RESULT, result);
         return obj.toJSONString();
     }
     
@@ -175,20 +179,21 @@ public class PriceWatchWS {
     @Path("login")
     @Consumes("text/plain")
     public String login(@QueryParam("userName") String userName, @QueryParam("password") String password) {
+        JSONObject obj = new JSONObject();
         boolean result = false;
         try {
             // Confirm the username and password
             if (pwLogic.isUserRegistered(userName, password)) {
                 // Construct a JSON string of all the trigger related data and return
-                return pwLogic.getUserTriggerData(userName);
+                obj = pwLogic.getUserTriggerData(userName);
+                result = true;
             }
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
         }
-        
-        JSONObject obj = new JSONObject();
-        obj.put("result", result);
+         
+        obj.put(Fields.RESULT, result);
         return obj.toJSONString();
     }
     
@@ -209,7 +214,7 @@ public class PriceWatchWS {
         }
         
         JSONObject obj = new JSONObject();
-        obj.put("result", result);
+        obj.put(Fields.RESULT, result);
         return obj.toJSONString();
     }
     

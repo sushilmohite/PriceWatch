@@ -40,9 +40,10 @@ public class PWLogic implements Serializable {
      * @param trigger
      * @return 
      */
-    public String addTrigger(final Trigger trigger) {
+    public boolean addTrigger(final Trigger trigger) {
         Document doc = new Document(Fields.USERNAME, trigger.getUserName())
                         .append(Fields.GAS_STATION_ID, trigger.getGasStationId())
+                        .append(Fields.GAS_STATION_NAME, trigger.getGasStationName())
                         .append(Fields.FUEL_TYPE, trigger.getFuelType())
                         .append(Fields.TARGET_ADDRESS, trigger.getTargetAddress())
                         .append(Fields.TARGET_LAT, trigger.getTargetLatitude())
@@ -51,8 +52,16 @@ public class PWLogic implements Serializable {
                         .append(Fields.DISTANCE, trigger.getDistance())
                         .append(Fields.MY_LAT, trigger.getMyLatitude())
                         .append(Fields.MY_LONG, trigger.getMyLongitude());
-        triggerCol.insertOne(doc);
-        return doc.get(Fields.ID).toString();
+        
+        try {
+            triggerCol.insertOne(doc);
+            //return doc.get(Fields.ID).toString();
+            return true;
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        return false;
     }
 
     /**
@@ -192,13 +201,14 @@ public class PWLogic implements Serializable {
         return false;
     }
     
-    public String getUserTriggerData(String userName) {
+    public JSONObject getUserTriggerData(String userName) {
         FindIterable<Document> triggers = triggerCol.find(new Document(Fields.USERNAME, userName));
         // Create array of triggers
         JSONArray userTriggers = new JSONArray();
         for (Document trigger : triggers) {
             JSONObject obj = new JSONObject();
             obj.put(Fields.ID, trigger.getObjectId(Fields.ID).toString());
+            obj.put(Fields.GAS_STATION_NAME, trigger.getString(Fields.GAS_STATION_NAME));
             obj.put(Fields.TARGET_ADDRESS, trigger.getString(Fields.TARGET_ADDRESS));
             obj.put(Fields.PRICE, trigger.getDouble(Fields.PRICE));
             obj.put(Fields.DISTANCE, trigger.getDouble(Fields.DISTANCE));
@@ -206,9 +216,9 @@ public class PWLogic implements Serializable {
         }
         
         JSONObject finalObj = new JSONObject();
-        finalObj.put(Fields.RESULT, true);
+        //finalObj.put(Fields.RESULT, true);
         finalObj.put(Fields.TRIGGERS, userTriggers);
-        return finalObj.toJSONString();
+        return finalObj;
     }
 
     /*
