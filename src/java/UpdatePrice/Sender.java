@@ -86,7 +86,7 @@ public class Sender extends Thread {
     
     private void checkPrice(int gasStationId, String fuelType, double price) {
         try {
-            Document latestPrice = (Document) latestPriceCol.find(new Document("_id", gasStationId));
+            Document latestPrice = (Document) latestPriceCol.find(new Document("_id", gasStationId)).first();
             if (latestPrice.getDouble(fuelType) != price) {
                 //Send update
                 URL priceWatchUrl = new URL(Config.PRICE_WATCH_URL + Config.PRICE_WATCH_API 
@@ -107,11 +107,16 @@ public class Sender extends Thread {
                 }
                 
                 // check if true
+                JSONParser parser = new JSONParser();
+                JSONObject response = (JSONObject) parser.parse(stringBuffer.toString());
+                
+                System.out.println(response.get("result"));
+                    
                 System.out.println(stringBuffer.toString());
             }
             latestPriceCol.updateOne(new Document(Fields.ID, gasStationId), 
                 new Document(ServerConfig.MONGO_UPDATE_KEY, new Document(fuelType, price)));
-        } catch (Exception e) {
+        } catch (IOException | ParseException e) {
             System.out.println(e.getMessage());
         }
     }

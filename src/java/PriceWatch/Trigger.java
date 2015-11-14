@@ -15,7 +15,7 @@ public class Trigger implements Serializable {
     private int gasStationId;
     private String gasStationName;
     private String fuelType;
-    private String targetAddress;
+    private String address;
     private double targetLatitude;
     private double targetLongitude;
     private double price;
@@ -149,15 +149,15 @@ public class Trigger implements Serializable {
     /**
      * @return the targetAddress
      */
-    public String getTargetAddress() {
-        return targetAddress;
+    public String getAddress() {
+        return address;
     }
 
     /**
-     * @param targetAddress the targetAddress to set
+     * @param address
      */
-    public void setTargetAddress(String targetAddress) {
-        this.targetAddress = targetAddress;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     /**

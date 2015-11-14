@@ -56,7 +56,10 @@ public class PriceWatchWS {
             
             pwLogic.updateLatestPrice(productInfo);         
             
-            if (price <= pwLogic.getSafeValue(productInfo.getGasStationId(), productInfo.getFuelType())) {
+            double safeValue = pwLogic.getSafeValue(productInfo.getGasStationId(), productInfo.getFuelType());
+            
+            // safe value should be greater or a positive value for evaluation
+            if ((price <= safeValue) || (safeValue < 0)) {
                 pwLogic.evaluate(productInfo);
             }
             
@@ -79,7 +82,7 @@ public class PriceWatchWS {
      * @param gasStationId
      * @param gasStationName
      * @param fuelType
-     * @param targetAddress
+     * @param address
      * @param targetLat
      * @param targetLong
      * @param price
@@ -92,7 +95,7 @@ public class PriceWatchWS {
     @GET
     @Path("client")
     @Consumes("text/plain")
-    public String subscribe(@QueryParam("userName") String userName, @QueryParam("password") String password, @QueryParam("gasStationId") int gasStationId, @QueryParam("gasStationName") String gasStationName, @QueryParam("fuelType") String fuelType, @QueryParam("targetAddress") String targetAddress, @QueryParam("targetLat") double targetLat, @QueryParam("targetLong") double targetLong, @QueryParam("price") double price, @QueryParam("distance") double distance, @QueryParam("myLat") double myLat, @QueryParam("myLong") double myLong) throws IOException {
+    public String subscribe(@QueryParam("userName") String userName, @QueryParam("password") String password, @QueryParam("gasStationId") int gasStationId, @QueryParam("gasStationName") String gasStationName, @QueryParam("fuelType") String fuelType, @QueryParam("address") String address, @QueryParam("targetLat") double targetLat, @QueryParam("targetLong") double targetLong, @QueryParam("price") double price, @QueryParam("distance") double distance, @QueryParam("myLat") double myLat, @QueryParam("myLong") double myLong) throws IOException {
         boolean result = false;
         try {
             if (pwLogic.isUserRegistered(userName, password)) {
@@ -101,8 +104,8 @@ public class PriceWatchWS {
                 gasStationName = gasStationName.replace(ServerConfig.TARGET_SEQ, ServerConfig.REPLACEMENT_SEQ);
                 trigger.setGasStationName(gasStationName);
                 trigger.setFuelType(fuelType);
-                targetAddress = targetAddress.replace(ServerConfig.TARGET_SEQ, ServerConfig.REPLACEMENT_SEQ);
-                trigger.setTargetAddress(targetAddress);
+                address = address.replace(ServerConfig.TARGET_SEQ, ServerConfig.REPLACEMENT_SEQ);
+                trigger.setAddress(address);
                 trigger.setTargetLatitude(targetLat);
                 trigger.setTargetLongitude(targetLong);
                 trigger.setPrice(price);
@@ -127,22 +130,22 @@ public class PriceWatchWS {
      * 
      * @param userName
      * @param password
-     * @param mylat
-     * @param mylong
+     * @param myLat
+     * @param myLong
      * @return
      * @throws IOException 
      */
     @GET
     @Path("client/location")
     @Consumes("text/plain")
-    public String updateLocation(@QueryParam("userName") String userName, @QueryParam("password") String password, @QueryParam("mylat") double mylat, @QueryParam("mylong") double mylong) throws IOException {
+    public String updateLocation(@QueryParam("userName") String userName, @QueryParam("password") String password, @QueryParam("myLat") double myLat, @QueryParam("myLong") double myLong) throws IOException {
         boolean result = false;
         try {
             if (pwLogic.isUserRegistered(userName, password)) {
                 LocationInfo locationInfo = new LocationInfo();
                 locationInfo.setUserName(userName);
-                locationInfo.setMyLat(mylat);
-                locationInfo.setMyLong(mylong);
+                locationInfo.setMyLat(myLat);
+                locationInfo.setMyLong(myLong);
         
                 pwLogic.updateMyLocation(locationInfo);
                 pwLogic.evaluateLocation(locationInfo);
@@ -234,6 +237,7 @@ public class PriceWatchWS {
             s.append(document);
             s.append('\n');
         }
+        s.append('\n');
         
         s.append("Safe Value Container");
         for (Document document : iterable2) {
@@ -241,6 +245,7 @@ public class PriceWatchWS {
             s.append(document);
             s.append('\n');
         }
+        s.append('\n');
         
         s.append("Latest Price");
         for (Document document : iterable3) {
@@ -248,6 +253,7 @@ public class PriceWatchWS {
             s.append(document);
             s.append('\n');
         }
+        s.append('\n');
         
         s.append("Users");
         for (Document document : iterable4) {

@@ -67,7 +67,7 @@ public class Receiver extends Thread {
                             .append("mid", Config.INITIAL_PRICE)
                             .append("pre", Config.INITIAL_PRICE)); 
                 }
-            } catch (Exception ex) {
+            } catch (IOException | NumberFormatException ex) {
                 System.err.println(ex.getMessage());
             }
         }

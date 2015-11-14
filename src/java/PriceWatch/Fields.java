@@ -16,7 +16,7 @@ public class Fields {
     public final static String GAS_STATION_ID = "gasStationId";
     public final static String GAS_STATION_NAME = "gasStationName";
     public final static String FUEL_TYPE = "fuelType";
-    public final static String TARGET_ADDRESS = "targetAddress";
+    public final static String ADDRESS = "address";
     public final static String TARGET_LAT = "targetLat";
     public final static String TARGET_LONG = "targetLong";
     public final static String PRICE = "price";

@@ -45,7 +45,7 @@ public class PWLogic implements Serializable {
                         .append(Fields.GAS_STATION_ID, trigger.getGasStationId())
                         .append(Fields.GAS_STATION_NAME, trigger.getGasStationName())
                         .append(Fields.FUEL_TYPE, trigger.getFuelType())
-                        .append(Fields.TARGET_ADDRESS, trigger.getTargetAddress())
+                        .append(Fields.ADDRESS, trigger.getAddress())
                         .append(Fields.TARGET_LAT, trigger.getTargetLatitude())
                         .append(Fields.TARGET_LONG, trigger.getTargetLongitude())
                         .append(Fields.PRICE, trigger.getPrice())
@@ -55,7 +55,7 @@ public class PWLogic implements Serializable {
         
         try {
             triggerCol.insertOne(doc);
-            //return doc.get(Fields.ID).toString();
+            setSafeValue(trigger.getGasStationId(), trigger.getFuelType());
             return true;
         }
         catch (Exception e) {
@@ -86,7 +86,7 @@ public class PWLogic implements Serializable {
         }
         
         // Calculate Safe Values
-        setSafeValue(productInfo);
+        setSafeValue(productInfo.getGasStationId(), productInfo.getFuelType());
     }
     
     // TODO
@@ -102,10 +102,12 @@ public class PWLogic implements Serializable {
                     trigger.getDouble(Fields.TARGET_LAT), 
                     trigger.getDouble(Fields.TARGET_LONG));
             if (distance <= trigger.getDouble(Fields.DISTANCE)) {
-                Document latestPrice = (Document) latestPriceCol.find(new Document(Fields.ID, 
-                        trigger.getInteger(Fields.GAS_STATION_ID))).first();                
-                if ((latestPrice.getDouble(trigger.getString(Fields.FUEL_TYPE)) <= trigger.getDouble(Fields.PRICE)) && 
-                        (trigger.getDouble(Fields.PRICE) > 0)) {
+                Document latestPriceDoc = (Document) latestPriceCol.find(new Document(Fields.ID, 
+                        trigger.getInteger(Fields.GAS_STATION_ID))).first();
+                double latestPrice = latestPriceDoc.getDouble(trigger.getString(Fields.FUEL_TYPE));
+                
+                // latest price should be less and a positive value for sending a notification
+                if ((latestPrice <= trigger.getDouble(Fields.PRICE)) && (latestPrice > 0)) {
                     // Send notification
                     sendNotification();
                 }
@@ -119,9 +121,9 @@ public class PWLogic implements Serializable {
                         .append(Fields.MY_LONG, locationInfo.getMyLong())));
     }
     
-    private void setSafeValue(final ProductInfo productInfo) {
-        FindIterable<Document> triggers = triggerCol.find(new Document(Fields.GAS_STATION_ID, productInfo.getGasStationId())
-                .append(Fields.FUEL_TYPE, productInfo.getFuelType()));
+    private void setSafeValue(int gasStationId, String fuelType) {
+        FindIterable<Document> triggers = triggerCol.find(new Document(Fields.GAS_STATION_ID, gasStationId)
+                .append(Fields.FUEL_TYPE, fuelType));
         double highMin = 0;
         for (Document trigger : triggers) {
             double triggerPrice = trigger.getDouble(Fields.PRICE);
@@ -130,8 +132,8 @@ public class PWLogic implements Serializable {
             }
         }
         
-        containerCol.updateOne(new Document(Fields.ID, productInfo.getGasStationId()), 
-                new Document(ServerConfig.MONGO_UPDATE_KEY, new Document(productInfo.getFuelType(), highMin)));
+        containerCol.updateOne(new Document(Fields.ID, gasStationId), 
+                new Document(ServerConfig.MONGO_UPDATE_KEY, new Document(fuelType, highMin)));
     }
     
     public boolean registerUser(String userName, String password) {
@@ -209,7 +211,7 @@ public class PWLogic implements Serializable {
             JSONObject obj = new JSONObject();
             obj.put(Fields.ID, trigger.getObjectId(Fields.ID).toString());
             obj.put(Fields.GAS_STATION_NAME, trigger.getString(Fields.GAS_STATION_NAME));
-            obj.put(Fields.TARGET_ADDRESS, trigger.getString(Fields.TARGET_ADDRESS));
+            obj.put(Fields.ADDRESS, trigger.getString(Fields.ADDRESS));
             obj.put(Fields.PRICE, trigger.getDouble(Fields.PRICE));
             obj.put(Fields.DISTANCE, trigger.getDouble(Fields.DISTANCE));
             userTriggers.add(obj);
