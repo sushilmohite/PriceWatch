@@ -28,4 +28,7 @@ public class Fields {
     public final static String PRE = "pre";
     public final static String TRIGGERS = "triggers";
     public final static String RESULT = "result";
+    
+    // For testing purposes
+    public final static String COMPLETE = "complete";
 }

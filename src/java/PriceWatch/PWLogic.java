@@ -51,7 +51,8 @@ public class PWLogic implements Serializable {
                         .append(Fields.PRICE, trigger.getPrice())
                         .append(Fields.DISTANCE, trigger.getDistance())
                         .append(Fields.MY_LAT, trigger.getMyLatitude())
-                        .append(Fields.MY_LONG, trigger.getMyLongitude());
+                        .append(Fields.MY_LONG, trigger.getMyLongitude())
+                        .append(Fields.COMPLETE, trigger.isComplete());
         
         try {
             triggerCol.insertOne(doc);
@@ -80,7 +81,7 @@ public class PWLogic implements Serializable {
                         trigger.getDouble(Fields.TARGET_LONG));
                 if (distance <= trigger.getDouble(Fields.DISTANCE)) {  
                     //Send notification
-                    sendNotification();
+                    sendNotification(trigger.getObjectId(Fields.ID));
                 }
             }
         }
@@ -89,9 +90,9 @@ public class PWLogic implements Serializable {
         setSafeValue(productInfo.getGasStationId(), productInfo.getFuelType());
     }
     
-    // TODO
-    private void sendNotification() {
-        System.out.println("Notification sent");
+    private void sendNotification(ObjectId objId) {
+        triggerCol.updateOne(new Document(Fields.ID, objId), 
+                new Document(ServerConfig.MONGO_UPDATE_KEY, new Document(Fields.COMPLETE, true)));        
     }
     
     public void evaluateLocation(final LocationInfo locationInfo) {
@@ -109,7 +110,7 @@ public class PWLogic implements Serializable {
                 // latest price should be less and a positive value for sending a notification
                 if ((latestPrice <= trigger.getDouble(Fields.PRICE)) && (latestPrice > 0)) {
                     // Send notification
-                    sendNotification();
+                    sendNotification(trigger.getObjectId(Fields.ID));
                 }
             }
         }
@@ -241,5 +242,34 @@ public class PWLogic implements Serializable {
     private double degree2radians(double deg) {
         double radians = (deg * Math.PI / 180.0);
         return radians;
+    }
+    
+    // For testing purposes only
+    public JSONObject getUserTriggerStatus(String userName) {
+        FindIterable<Document> triggers = triggerCol.find(new Document(Fields.USERNAME, userName));
+        // Create array of triggers
+        JSONArray userTriggers = new JSONArray();
+        for (Document trigger : triggers) {
+            if (trigger.getBoolean(Fields.COMPLETE)) {
+                JSONObject obj = new JSONObject();
+                //obj.put(Fields.ID, trigger.getObjectId(Fields.ID).toString());
+                obj.put(Fields.GAS_STATION_NAME, trigger.getString(Fields.GAS_STATION_NAME));
+                obj.put(Fields.ADDRESS, trigger.getString(Fields.ADDRESS));
+                obj.put(Fields.PRICE, trigger.getDouble(Fields.PRICE));
+                //obj.put(Fields.DISTANCE, trigger.getDouble(Fields.DISTANCE));
+                userTriggers.add(obj);
+            }
+        }
+        
+        JSONObject finalObj = new JSONObject();
+        //finalObj.put(Fields.RESULT, true);
+        finalObj.put(Fields.TRIGGERS, userTriggers);
+        return finalObj;
+    }
+    
+    // For testing purposes
+    public void setValues(String userName) {
+        triggerCol.updateMany(new Document(Fields.USERNAME, userName), 
+                new Document(ServerConfig.MONGO_UPDATE_KEY, new Document(Fields.COMPLETE, true)));       
     }
 }

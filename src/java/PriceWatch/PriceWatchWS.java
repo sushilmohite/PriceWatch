@@ -112,6 +112,7 @@ public class PriceWatchWS {
                 trigger.setDistance(distance);
                 trigger.setMyLatitude(myLat);
                 trigger.setMyLongitude(myLong);
+                trigger.setComplete(false);
                 result = pwLogic.addTrigger(trigger);
             
                 pwLogic.evaluateContainersForGasStationId(trigger.getGasStationId());
@@ -147,6 +148,7 @@ public class PriceWatchWS {
                 locationInfo.setMyLat(myLat);
                 locationInfo.setMyLong(myLong);
         
+                System.out.println(userName + " " + myLat + " " + myLong);
                 pwLogic.updateMyLocation(locationInfo);
                 pwLogic.evaluateLocation(locationInfo);
                 result = true;
@@ -190,6 +192,9 @@ public class PriceWatchWS {
                 // Construct a JSON string of all the trigger related data and return
                 obj = pwLogic.getUserTriggerData(userName);
                 result = true;
+                
+                // For testing purposes
+                pwLogic.setValues(userName);
             }
         }
         catch (Exception e) {
@@ -217,6 +222,30 @@ public class PriceWatchWS {
         }
         
         JSONObject obj = new JSONObject();
+        obj.put(Fields.RESULT, result);
+        return obj.toJSONString();
+    }
+    
+    // For test purposes only
+    @GET
+    @Path("check")
+    @Consumes("text/plain")
+    public String check(@QueryParam("userName") String userName, @QueryParam("password") String password) {
+        JSONObject obj = new JSONObject();
+        boolean result = false;
+        try {
+            // Confirm the username and password
+            if (pwLogic.isUserRegistered(userName, password)) {
+                // Construct a JSON string of all the trigger related data and return
+                obj = pwLogic.getUserTriggerStatus(userName);
+                System.out.println(obj.toJSONString());
+                result = true;
+            }
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+         
         obj.put(Fields.RESULT, result);
         return obj.toJSONString();
     }

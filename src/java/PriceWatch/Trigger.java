@@ -23,6 +23,9 @@ public class Trigger implements Serializable {
     private double myLatitude;
     private double myLongitude;
     
+    // For testing purposes
+    private boolean complete;
+    
     public Trigger(String userName) {
         this.userName = userName;
     }
@@ -172,5 +175,19 @@ public class Trigger implements Serializable {
      */
     public void setGasStationName(String gasStationName) {
         this.gasStationName = gasStationName;
+    }
+
+    /**
+     * @return the complete
+     */
+    public boolean isComplete() {
+        return complete;
+    }
+
+    /**
+     * @param complete the complete to set
+     */
+    public void setComplete(boolean complete) {
+        this.complete = complete;
     }
 }
